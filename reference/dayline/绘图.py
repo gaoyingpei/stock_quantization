@@ -20,13 +20,13 @@ import Public.Public as Public
 
 
 
-from 子图定义.公司信息子图 import 公司信息子图
-from 子图定义.日线价格子图 import 日线价格子图
-from 子图定义.日线换手子图 import 日线换手子图
-from 子图定义.分时价格子图 import 分时价格子图
-from 子图定义.分时手数子图 import 分时手数子图
-from 子图定义.实盘价格子图 import 实盘价格子图
-from 子图定义.实盘手数子图 import 实盘手数子图
+from submap.公司信息子图 import 公司信息子图
+from submap.日线价格子图 import 日线价格子图
+from submap.日线换手子图 import 日线换手子图
+from submap.分时价格子图 import 分时价格子图
+from submap.分时手数子图 import 分时手数子图
+from submap.实盘价格子图 import 实盘价格子图
+from submap.实盘手数子图 import 实盘手数子图
 
 
 
