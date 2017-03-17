@@ -106,6 +106,43 @@ def degree(c1, c2)
     return abs(100 * (c1 - c2) / c2)
 
 
+# 根据股票数据画出股票K线图
+def kline(stock, key, start, end):
+    
+
+# pandas and matplotlib api
+# pandas.read_csv()
+# pds.apply()
+# pds.describe()
+
+# plt.plot()
+# plt.show()
+# plt.rcParams[]
+# plt.xlim()
+# plt.ylim()
+# plt.xticks()
+# plt.yticks()
+# plt.title()
+# plt.xlabel()
+# plt.ylabel()
+# plt.grid()
+# plt.legend()
+# plt.subplot()
+
+# plt.bar()
+# plt.barh()
+# plt.hist()
+# plt.pie()
+# plt.boxplot()
+
+# plt.figure()
+# ax = fig.add.axes()
+# ax.plot()
+# ax.set_title()
+# ax.set_xlim()
+# ...
+
+
 
 if __name__ == '__main__':  
     # downloadStockList()
