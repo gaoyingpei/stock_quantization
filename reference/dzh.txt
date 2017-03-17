@@ -1,0 +1,30 @@
+# 一线法
+I := 10;
+
+WHILE I<100 DO
+	BEGIN
+        {'当天收盘价大于均线价'}
+        A1 := CROSS(C, MA(C, I)) AND C > O;
+        {'30天均线朝下'}
+        A2 := REF(MA(C, I), 1) < REF(MA(C, I), 2);
+        A3 := COUNT(A2, DOWNDAY) = DOWNDAY;
+        {'30天里至少28天最高价小于均线价'}
+        A4 := REF(H, 1) < REF(MA(C, I), 1);
+        A5 := COUNT(A4, DOWNDAY) >= DOWNDAY-2;
+        {'寻找高点并定义高点与均线的偏离幅度'}
+        A6 := HHVBARS(REF(H, 5), HDAY);
+        A7 := 100 * ABS(REF(MA(C, I), A6) - REF(H, A6)) / REF(H, A6) < HRANGE;
+        {'确定高点为大跌之后的反弹高点'}
+        A8 := HHVBARS(REF(H, A6),HDAY);
+        A9 := LLVBARS(REF(L, A6),HDAY);
+        A10 := (100 * (REF(H, A8) - REF(H, A6)) / REF(H, A6) > LRANGE)  AND (100 * ( REF(H, A6) - REF(L, A9)) / REF(L, A9) > LRANGE);
+
+        A11 := FILTER(A1 AND A3 AND A5 AND A7, 30);
+
+		IF A11 THEN BREAK;
+
+		I := I + 1;
+	END
+
+DRAWTEXT(CROSS(C, MA(C,I)), C, NUMTOSTRN(I, 0) + '日均线');
+PARTLINE(MA(C, I), 1, RGB(255, 255, 128));

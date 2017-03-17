@@ -46,7 +46,6 @@ def main():
     ax.xaxis.set_minor_locator(alldays)
     ax.xaxis.set_major_formatter(mondayFormatter)
     #ax.xaxis.set_minor_formatter(dayFormatter)
-
     #plot_day_summary(ax, quotes, ticksize=3)
     candlestick_ohlc(ax, quotes, width=0.6, colorup='r', colordown='g')
 
@@ -327,8 +326,30 @@ def download():
 
     urllib.request.urlretrieve(url, filename)        #下载，保存
 
+def candle():
+    import numpy as np
+
+    all_data = [np.random.normal(0, std, 100) for std in range(1, 4)]
+
+    fig = plt.figure(figsize=(8,6))
+
+    bplot = plt.boxplot(all_data,
+                notch=False,  # notch shape
+                vert=True,   # vertical box aligmnent
+                patch_artist=True)   # fill with color
+
+    colors = ['pink', 'lightblue', 'lightgreen']
+    for patch, color in zip(bplot['boxes'], colors):
+        patch.set_facecolor(color)
+
+    plt.xticks([y+1 for y in range(len(all_data))], ['x1', 'x2', 'x3'])
+    plt.xlabel('measurement x')
+    t = plt.title('Box plot')
+    plt.show()
+
 if __name__ == '__main__':
-    #main()
+    main()
     #kline()
     #ss50()
-    download()
+    #download()
+    #candle()

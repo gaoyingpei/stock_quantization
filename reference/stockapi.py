@@ -7,7 +7,12 @@ __author__ = 'gaoyingpei'
 
 import tushare as ts
 # tushare 用于爬取新浪股票数据
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from matplotlib.finance import candlestick_ohlc
+# 用户作图
 import pandas as pds
+# 用户数据结构
 import json
 import csv
 import time
@@ -38,11 +43,6 @@ def downloadStockData():
             stock.to_json(filename, orient='records') #保存为JSON格式
 
 
-# 一线法主流程
-def oneMa():
-    test = 1
-
-
 # 返回距离当前时间多少小时之前的时间
 def beforeTime(hours):
     hours = int(hours)
@@ -58,8 +58,12 @@ def intervalDay(time1, time2):
         time1 = time1[0:4] + '-' + time1[4:6] + '-' + time1[6:8]
         time2 = time2[0:4] + '-' + time2[4:6] + '-' + time2[6:8]
     
-    timeArray1 = time.strptime(time1 + ' 16:00:00', "%Y-%m-%d %H:%M:%S")
-    timeArray2 = time.strptime(time2 + ' 16:00:00', "%Y-%m-%d %H:%M:%S")
+    if len(time1) == 10:
+        time1 = time1 + ' 00:00:00'
+        time2 = time2 + ' 00:00:00'
+    
+    timeArray1 = time.strptime(time1, "%Y-%m-%d %H:%M:%S")
+    timeArray2 = time.strptime(time2, "%Y-%m-%d %H:%M:%S")
 
     # 两个时间间隔秒数
     seconds = abs(time.mktime(timeArray2) - time.mktime(timeArray1))
@@ -102,18 +106,60 @@ def REF(stock, key, day, index):
 
 
 # 获取两个值偏离幅度
-def degree(c1, c2)
+def degree(c1, c2):
     return abs(100 * (c1 - c2) / c2)
 
 
+# 获取指标对应中文
+def quotaName(quota):
+    nameList = {'close':'收盘价', 'open':'开盘价', 'high':'最高价', 'low':'最低价', 'date':'区间', 'ma':'均线'}
+    return nameList[quota]
+
 # 根据股票数据画出股票K线图
 def kline(stock, key, start, end):
+    baseData = stock[start:end]
+
+    # 设置字体
+    plt.rcParams['font.sans-serif'] = ['SimHei']
+    # 设置负值可显示
+    plt.rcParams['axes.unicode_minus'] = False
+
+    fig = plt.figure()
+    ax = plt.subplot2grid((1,1), (0,0))
+    # 设置标签
+    plt.xlabel(quotaName('date'))
+    plt.ylabel(quotaName(key))
+    # 设置标题
+    plt.title(quotaName(key) + '走势图')
+    # 设置格子背景
+    plt.grid(True)
+    # 设置坐标界限
+    plt.ylim(0, 10)
+
+    quotes = []
+    for i in range(0,len(baseData.index)):
+        closep, codep, highp, lowp, openp, volumep, datep = baseData.ix[i]
+        # datep = str(datep)[0:4] + str(datep)[5:7] + str(datep)[8:10]
+        strconverter = mdates.strpdate2num('%Y%m%d')
+        print(strconverter(datep))
+        quotes.append([datep, openp, highp, lowp, closep, volumep])
     
+    print(ax)
+    candlestick_ohlc(ax, quotes, width=0.6, colorup='r', colordown='g')
+    # 做出K线图
+    plt.plot(baseData[key])
+    plt.show()
+
 
 # pandas and matplotlib api
 # pandas.read_csv()
 # pds.apply()
 # pds.describe()
+
+# df = pd.read_json("510050.csv")
+# df.set_index('date') # df.index = df['date'].tolist()
+# df['date'] = df.index
+# stock.loc[start:end, ['date']]
 
 # plt.plot()
 # plt.show()
@@ -147,3 +193,6 @@ def kline(stock, key, start, end):
 if __name__ == '__main__':  
     # downloadStockList()
     # downloadStockData()
+    stock = pds.read_json('D:/Python/test/ma/000001.json').set_index('date')
+    stock['date'] = stock.index
+    kline(stock, 'close', '2013-01-01', '2014-01-01')
