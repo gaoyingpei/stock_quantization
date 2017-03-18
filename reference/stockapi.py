@@ -8,7 +8,7 @@ __author__ = 'gaoyingpei'
 import tushare as ts
 # tushare 用于爬取新浪股票数据
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+from matplotlib.dates import DateFormatter, WeekdayLocator, DayLocator, MONDAY, date2num
 from matplotlib.finance import candlestick_ohlc
 # 用户作图
 import pandas as pds
@@ -124,75 +124,69 @@ def kline(stock, key, start, end):
     # 设置负值可显示
     plt.rcParams['axes.unicode_minus'] = False
 
-    fig = plt.figure()
-    ax = plt.subplot2grid((1,1), (0,0))
-    # 设置标签
-    plt.xlabel(quotaName('date'))
-    plt.ylabel(quotaName(key))
-    # 设置标题
-    plt.title(quotaName(key) + '走势图')
-    # 设置格子背景
-    plt.grid(True)
-    # 设置坐标界限
-    plt.ylim(0, 10)
+    # 设置日期转换格式（float）
+    formatter = [date2num(date) for date in baseData.index]
+    baseData.loc[:, 'date'] = formatter
 
-    quotes = []
-    for i in range(0,len(baseData.index)):
-        closep, codep, highp, lowp, openp, volumep, datep = baseData.ix[i]
-        # datep = str(datep)[0:4] + str(datep)[5:7] + str(datep)[8:10]
-        strconverter = mdates.strpdate2num('%Y%m%d')
-        print(strconverter(datep))
-        quotes.append([datep, openp, highp, lowp, closep, volumep])
+    candleList = []
+    for i in range(len(baseData)):
+        oneCandle = [baseData.ix[i]['date'], baseData.ix[i]['open'], baseData.ix[i]['high'], baseData.ix[i]['low'], baseData.ix[i]['close']]
+        candleList.append(oneCandle)
+
+    # 定义画布
+    fig = plt.figure()
+    # 定义画图对象/增加子图
+    ax = fig.add_axes([0.05,0.12,0.9,0.85])
+    # ax = plt.subplot()
+    # Locate days of the week
+    mondays = WeekdayLocator(MONDAY)
+    # 日期格式设置为'15-MAR-09'形式
+    weekFormatter = DateFormatter('%y %b %d')
+    # 设置x轴主刻度标签，副刻度标签，主刻度格式
+    ax.xaxis.set_major_locator(mondays)
+    ax.xaxis.set_minor_locator(DayLocator())
+    ax.xaxis.set_major_formatter(weekFormatter)
+
+    # 调用函数画蜡烛图
+    candlestick_ohlc(ax, candleList, width=0.7, colorup='r', colordown='g')
+
+    # 设置x轴日期显示位置和倾斜角度(plt.gca():获取当前的axes绘图区域)
+    plt.setp(plt.gca().get_xticklabels(), rotation=50, horizontalalignment= 'center')
+
+    # 设置背景色
+    ax.set_facecolor('black')
+
+    # 设置标签
+    ax.set_xlabel(quotaName('date'))
+    ax.set_ylabel(quotaName(key))
+    # 设置标题
+    # plt.title(quotaName(key) + '走势图')
+    ax.set_title(quotaName(key) + '走势图')
+    # # 设置格子背景
+    # plt.grid(True)
+    # # 设置坐标界限
+    # plt.ylim(0, 10)
     
-    print(ax)
-    candlestick_ohlc(ax, quotes, width=0.6, colorup='r', colordown='g')
     # 做出K线图
-    plt.plot(baseData[key])
+    ax.plot(baseData[key], '--y.')
+    # 多个子图同时显示
+    ax.legend(loc='best')
     plt.show()
 
 
-# pandas and matplotlib api
-# pandas.read_csv()
 # pds.apply()
 # pds.describe()
-
-# df = pd.read_json("510050.csv")
-# df.set_index('date') # df.index = df['date'].tolist()
-# df['date'] = df.index
-# stock.loc[start:end, ['date']]
-
-# plt.plot()
-# plt.show()
-# plt.rcParams[]
-# plt.xlim()
-# plt.ylim()
-# plt.xticks()
-# plt.yticks()
-# plt.title()
-# plt.xlabel()
-# plt.ylabel()
-# plt.grid()
-# plt.legend()
-# plt.subplot()
-
 # plt.bar()
 # plt.barh()
 # plt.hist()
 # plt.pie()
 # plt.boxplot()
 
-# plt.figure()
-# ax = fig.add.axes()
-# ax.plot()
-# ax.set_title()
-# ax.set_xlim()
-# ...
 
 
-
-if __name__ == '__main__':  
+if __name__ == '__main__':
     # downloadStockList()
     # downloadStockData()
-    stock = pds.read_json('D:/Python/test/ma/000001.json').set_index('date')
+    stock = pds.read_json('E:/Python/000001.json').set_index('date')
     stock['date'] = stock.index
-    kline(stock, 'close', '2013-01-01', '2014-01-01')
+    kline(stock, 'close', '2015-01-01', '2016-01-01')
