@@ -12,6 +12,7 @@ from matplotlib.dates import DateFormatter, WeekdayLocator, DayLocator, MONDAY, 
 from matplotlib.finance import candlestick_ohlc
 # 用户作图
 import pandas as pds
+import numpy as np
 # 用户数据结构
 import json
 import csv
@@ -135,9 +136,11 @@ def kline(stock, key, start, end):
 
     # 定义画布
     fig = plt.figure()
-    # 定义画图对象/增加子图
-    ax = fig.add_axes([0.05,0.12,0.9,0.85])
-    # ax = plt.subplot()
+    # 定义画图对象/增加子图(left, bottom, width, height)
+    # ax = fig.add_axes([0.05,0.55,0.9,0.4])
+    # ax2 = fig.add_axes([0.05,0.1,0.9,0.4])
+    ax = plt.subplot(211)
+    ax2 = plt.subplot(212)
     # Locate days of the week
     mondays = WeekdayLocator(MONDAY)
     # 日期格式设置为'15-MAR-09'形式
@@ -171,6 +174,17 @@ def kline(stock, key, start, end):
     ax.plot(baseData[key], '--y.')
     # 多个子图同时显示
     ax.legend(loc='best')
+
+
+    # 做出成交量柱状图
+    ax2.set_ylabel('成交量')
+    ax2.xaxis.set_major_locator(mondays)
+    ax2.xaxis.set_minor_locator(DayLocator())
+    ax2.xaxis.set_major_formatter(weekFormatter)
+    ax2.bar(np.array(baseData['date'])[np.array(baseData['close']>= baseData['open'])], height = baseData.iloc[:,4][np.array(baseData['close']>= baseData['open'])], color = 'r', align = 'center')
+    ax2.bar(np.array(baseData['date'])[np.array(baseData['close']< baseData['open'])], height = baseData.iloc[:,4][np.array(baseData['close']< baseData['open'])], color = 'g', align = 'center')
+    ax2.set_title('日成交量')
+
     plt.show()
 
 
@@ -189,4 +203,4 @@ if __name__ == '__main__':
     # downloadStockData()
     stock = pds.read_json('E:/Python/000001.json').set_index('date')
     stock['date'] = stock.index
-    kline(stock, 'close', '2015-01-01', '2016-01-01')
+    kline(stock, 'close', '2015-01-01', '2015-04-01')
