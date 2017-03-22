@@ -181,11 +181,11 @@ def kline(stock, key, start, end):
     ax2.xaxis.set_major_locator(mondays)
     ax2.xaxis.set_minor_locator(DayLocator())
     ax2.xaxis.set_major_formatter(weekFormatter)
-    ax2.bar(np.array(baseData['date'])[np.array(baseData['close']>= baseData['open'])],\
-            height = baseData.iloc[:,4][np.array(baseData['close']>= baseData['open'])],\
+    ax2.bar(np.array(baseData['date'])[np.array(baseData['close'] >= baseData['open'])], \
+            height = baseData.iloc[:,4][np.array(baseData['close'] >= baseData['open'])], \
             color = 'r', align = 'center')
-    ax2.bar(np.array(baseData['date'])[np.array(baseData['close']< baseData['open'])],\
-            height = baseData.iloc[:,4][np.array(baseData['close']< baseData['open'])],\
+    ax2.bar(np.array(baseData['date'])[np.array(baseData['close'] < baseData['open'])], \
+            height = baseData.iloc[:,4][np.array(baseData['close'] < baseData['open'])], \
             color = 'g', align = 'center')
     ax2.set_title('日成交量')
 

@@ -33,6 +33,8 @@ def downloadStockData():
             # 获取股票历史数据
             startTime = value[1][0:4] + '-' + value[1][4:6] + '-' + value[1][6:8]
             stock = ts.get_hist_data(value[0])
+            stock['date'] = stock.index
+            stock['code'] = value[0]
             # 读取/存入本地JSON文件
             filename = 'D:/Python/test/stock/' + value[0] + '.json'
             stock.to_json(filename, orient='records') #保存为JSON格式
@@ -55,6 +57,8 @@ def getLimitUp():
     ladLose = 0 #跌幅超过6%之后涨停之后10天内亏损次数
     rangeWin = 0 #跌幅超过6%之后涨停之后10天内盈利幅度
     rangeLose = 0 #跌幅超过6%之后涨停之后10天内亏损幅度
+    maxLose = {'change':0, 'sell':'', 'buy':'', 'code':''} #跌幅超过6%之后涨停之后10天内最大亏损
+    maxWin = {'change':0, 'sell':'', 'buy':'', 'code':''} #跌幅超过6%之后涨停之后10天内最大盈利
 
     # 读取CSV文件获取股票列表
     with open('D:/Python/test/stocklist.csv','r', encoding='utf-8') as csvfile:
@@ -90,6 +94,10 @@ def getLimitUp():
             ladLose += addCnt['ladLose']
             rangeWin += addCnt['rWin']
             rangeLose += addCnt['rLose']
+            if addCnt['maxWin']['change'] > maxWin['change']:
+                maxWin = addCnt['maxWin']
+            if addCnt['maxLose']['change'] < maxLose['change']:
+                maxLose = addCnt['maxLose']
         
     print('******************** start ********************')
     # print('统计股票数：' + str(stockCount))
@@ -118,6 +126,8 @@ def getLimitUp():
     print('大跌6%=>涨停=>10日后收盘价平仓 平均跌幅：' + str(rangeLose/ladLose))
     print('大跌6%=>涨停=>10日后收盘价平仓 投入100000可盈利：' + str(100000 * (rangeWin/ladWin) * (ladWin/limitupAfterDown) - 100000 * abs(rangeLose/ladLose) * (ladLose/limitupAfterDown)) + '元')
     # print('大跌6%=>涨停=>10日后收盘价平仓 每次投入100000总盈利：' + str(100000 * (rangeWin/ladWin) * ladWin - 100000 * abs(rangeLose/ladLose) * ladLose) + '元')
+    print('大跌6%=>涨停=>10日后收盘价平仓 最大涨幅：' + str(maxWin['change']) + ', 股票代码：' + str(maxWin['code']) + ', 买入日期：' + str(maxWin['buy']) + ', 卖出日期：' + str(maxWin['sell']))
+    print('大跌6%=>涨停=>10日后收盘价平仓 最大跌幅：' + str(maxLose['change']) + ', 股票代码：' + str(maxLose['code']) + ', 买入日期：' + str(maxLose['buy']) + ', 卖出日期：' + str(maxLose['sell']))
     print('******************** end **********************\n')
 
 
@@ -139,6 +149,8 @@ def getOneCount(stock):
     ladLose = 0 #跌幅超过6%之后涨停之后10天内亏损次数
     rangeWin = 0 #跌幅超过6%之后涨停之后10天内盈利幅度
     rangeLose = 0 #跌幅超过6%之后涨停之后10天内亏损幅度
+    maxLose = {'change':0, 'sell':'', 'buy':'', 'code':''} #跌幅超过6%之后涨停之后10天内最大亏损
+    maxWin = {'change':0, 'sell':'', 'buy':'', 'code':''} #跌幅超过6%之后涨停之后10天内最大盈利
 
     # 未复权数据接口(对应函数get_hist_data)
     for i in range(len(stock)-1, 0, -1):
@@ -157,23 +169,32 @@ def getOneCount(stock):
             if stock[i + 9]['low'] != stock[i + 9]['high']:
                 limitupAfterDown += 1
                 buyPrice = stock[i + 9]['open']
-                sellPrice = stock[i]['close']
+                buyDay = stock[i + 9]['date']
+                sellPrice = stock[i + 9]['close']
+                sellDay = stock[i]['date']
                 # 排除跌停一字板
-                for j in range(i, -1, -1):
-                    if ((stock[j]['p_change'] > -9.5 and stock[j]['low'] != stock[j]['high']) or j == 0):
-                        sellPrice = stock[j]['close']
+                for j in range(i + 8, -1, -1):
+                    # 因为是未复权数据
+                    sellPrice = sellPrice * (1 + stock[j]['p_change'])
+                    if ((j <= i and stock[j]['p_change'] > -9.5 and stock[j]['low'] != stock[j]['high']) or j == 0):
+                        sellDay = stock[j]['date']
                         break
 
                 buyRange = (sellPrice - buyPrice) / buyPrice - 0.002
                 if buyRange >= 0:
                     ladWin += 1
                     rangeWin += buyRange
+                    if buyRange > maxWin['change']:
+                        maxWin = {'change':buyRange, 'sell':sellDay, 'buy':buyDay, 'code':stock[0]['code']}
                 else:
                     ladLose += 1
                     rangeLose += buyRange
+                    if buyRange < maxLose['change']:
+                        maxLose = {'change':buyRange, 'sell':sellDay, 'buy':buyDay, 'code':stock[0]['code']}
 
         # 涨停
         limitUpFlg = 1 if (9.5 <= stock[i + 2]['p_change'] and stock[i + 2]['p_change'] < 12) else 0
+
         if limitUpFlg == 1:
             totalCount += 1
         # 连续涨停，非一字板
@@ -204,7 +225,7 @@ def getOneCount(stock):
     return {'red':redCount, 'green':greenCount, 'total':totalCount,\
             'rAr':redAferRed, 'gAr':greenAferRed, 'rAg':redAferGreen,\
             'gAg':greenAferGreen, 'limit':limitWithoutOneLine, 'lAl':limitAfterLimitWithoutOneLine,\
-            'lAd':limitupAfterDown, 'ladWin':ladWin, 'ladLose':ladLose, 'rWin':rangeWin, 'rLose':rangeLose}
+            'lAd':limitupAfterDown, 'ladWin':ladWin, 'ladLose':ladLose, 'rWin':rangeWin, 'rLose':rangeLose, 'maxWin':maxWin, 'maxLose':maxLose}
 
 
 if __name__ == '__main__':  
