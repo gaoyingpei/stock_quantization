@@ -14,17 +14,17 @@ import time
 
 
 # 下载股票列表
-def downloadStockList():
+def getStockList(path):
     fq = ts.get_stock_basics()
     stockList = []
     stockList = pds.DataFrame(fq, columns=['timeToMarket'])
-    stockList.to_csv('D:/Python/test/stocklist.csv', header=None)
+    stockList.to_csv(path, header=None)
 
 
-# 下载数据
-def downloadStockData():
+# 下载数据(未复权)
+def downloadNotFqStock(slpath, filepath):
     # 读取CSV文件获取股票列表
-    with open('D:/Python/test/stocklist.csv','r', encoding='utf-8') as f:
+    with open(slpath,'r', encoding='utf-8') as f:
         stockList = csv.reader(f)
         for value in stockList:
             # 股票未上市
@@ -36,12 +36,27 @@ def downloadStockData():
             stock['date'] = stock.index
             stock['code'] = value[0]
             # 读取/存入本地JSON文件
-            filename = 'D:/Python/test/stock/' + value[0] + '.json'
+            filename = filepath + value[0] + '.json'
             stock.to_json(filename, orient='records') #保存为JSON格式
 
+# 下载数据(前复权)
+def downloadQfqStock(slpath, filepath):
+    # 读取CSV文件获取股票列表
+    with open(slpath,'r', encoding='utf-8') as f:
+        stockList = csv.reader(f)
+        for value in stockList:
+            # 股票未上市
+            if value[1] == '0':
+                continue
+            # 获取股票历史数据
+            startTime = value[1][0:4] + '-' + value[1][4:6] + '-' + value[1][6:8]
+            stock = ts.get_k_data(code=value[0], ktype='D', autype='qfq', start=startTime)
+            # 读取/存入本地JSON文件
+            filename = filepath + value[0] + '.json'
+            stock.to_json(filename, orient='records') #保存为JSON格式
 
 # 统计所有股票涨停信息
-def getLimitUp():
+def getLimitUp(slpath, filepath):
     stockCount = 0 #统计股票数
     totalCount = 0 #涨停次数
     redCount = 0 #涨停第二天上升次数
@@ -61,7 +76,7 @@ def getLimitUp():
     maxWin = {'change':0, 'sell':'', 'buy':'', 'code':''} #跌幅超过6%之后涨停之后10天内最大盈利
 
     # 读取CSV文件获取股票列表
-    with open('D:/Python/test/stocklist.csv','r', encoding='utf-8') as csvfile:
+    with open(slpath,'r', encoding='utf-8') as csvfile:
         stockList = csv.reader(csvfile)
         for value in stockList:
             # 股票未上市
@@ -69,7 +84,7 @@ def getLimitUp():
                 continue
             stockCount += 1
             # 读取JSON文件获取股票信息
-            filename = 'D:/Python/test/stock/' + value[0] + '.json'
+            filename = filepath + value[0] + '.json'
             jsonfile = open(filename, encoding='utf-8')
             stock = json.load(jsonfile)
             
@@ -175,7 +190,7 @@ def getOneCount(stock):
                 # 排除跌停一字板
                 for j in range(i + 8, -1, -1):
                     # 因为是未复权数据
-                    sellPrice = sellPrice * (1 + stock[j]['p_change'])
+                    sellPrice = sellPrice * (1 + stock[j]['p_change'] / 100)
                     if ((j <= i and stock[j]['p_change'] > -9.5 and stock[j]['low'] != stock[j]['high']) or j == 0):
                         sellDay = stock[j]['date']
                         break
@@ -229,6 +244,7 @@ def getOneCount(stock):
 
 
 if __name__ == '__main__':  
-    # downloadStockList()
-    # downloadStockData()
-    getLimitUp()
+    # getStockList('D:/Python/test/stocklist.csv')
+    # downloadNotFqStock('D:/Python/test/stocklist.csv', 'D:/Python/test/stockNfq/')
+    downloadQfqStock('D:/Python/test/stocklist.csv', 'D:/Python/test/stockQfq/')
+    # getLimitUp('D:/Python/test/stocklist.csv', 'D:/Python/test/stockNfq/')
