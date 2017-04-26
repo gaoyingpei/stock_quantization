@@ -178,8 +178,13 @@ def getOneCount(stock):
         if (i >= len(stock) - 5 or stock[i]['open'] == 0 or stock[i + 5]['close'] == 0):
             continue
 
+        # 过滤时间
+        if (stock[i + 11]['date'] > '2017-01-01' or stock[i + 11]['date'] < '2016-01-01') {
+            continue
+        }
+
         # 下跌幅度超过6%
-        if (stock[i + 11]['p_change'] < -6 and stock[i + 10]['p_change'] >= 9.5 and stock[i + 10]['p_change'] < 12):
+        if (stock[i + 11]['p_change'] < -6 and stock[i + 10]['p_change'] >= 9.65):
             # 排除涨停一字板
             if stock[i + 9]['low'] != stock[i + 9]['high']:
                 limitupAfterDown += 1
@@ -191,7 +196,7 @@ def getOneCount(stock):
                 for j in range(i + 8, -1, -1):
                     # 因为是未复权数据
                     sellPrice = sellPrice * (1 + stock[j]['p_change'] / 100)
-                    if ((j <= i and stock[j]['p_change'] > -9.5 and stock[j]['low'] != stock[j]['high']) or j == 0):
+                    if ((j <= i and stock[j]['p_change'] > -9.65 and stock[j]['low'] != stock[j]['high']) or j == 0):
                         sellDay = stock[j]['date']
                         break
 
@@ -207,35 +212,35 @@ def getOneCount(stock):
                     if buyRange < maxLose['change']:
                         maxLose = {'change':buyRange, 'sell':sellDay, 'buy':buyDay, 'code':stock[0]['code']}
 
-        # 涨停
-        limitUpFlg = 1 if (9.5 <= stock[i + 2]['p_change'] and stock[i + 2]['p_change'] < 12) else 0
+        # # 涨停
+        # limitUpFlg = 1 if (9.5 <= stock[i + 2]['p_change'] and stock[i + 2]['p_change'] < 12) else 0
 
-        if limitUpFlg == 1:
-            totalCount += 1
-        # 连续涨停，非一字板
-        if limitUpFlg == 1 and (stock[i + 2]['close'] - stock[i + 2]['open']) / stock[i + 2]['open'] > 0.01:
-            limitWithoutOneLine += 1
-            if (9.5 <= stock[i + 1]['p_change'] and stock[i + 1]['p_change'] < 12) and\
-                ((stock[i + 1]['close'] - stock[i + 1]['open']) / stock[i + 1]['open'] > 0.01):
-                limitAfterLimitWithoutOneLine += 1
-        # 昨天涨停并且当天收阳
-        if (stock[i + 1]['p_change'] > 0 and limitUpFlg == 1):
-            redCount += 1
-            # 前天涨停并且当天收阳
-            if (stock[i]['p_change'] > 0):
-                redAferRed += 1
-            # 前天涨停并且当天收阴
-            if (stock[i]['p_change'] < 0):
-                greenAferRed += 1
-        # 昨天涨停并且当天收阴
-        if (stock[i + 1]['p_change'] < 0 and limitUpFlg == 1):
-            greenCount += 1
-            # 前天涨停并且当天收阳
-            if (stock[i]['p_change'] > 0):
-                redAferGreen += 1
-            # 前天涨停并且当天收阴
-            if (stock[i]['p_change'] < 0):
-                greenAferGreen += 1
+        # if limitUpFlg == 1:
+        #     totalCount += 1
+        # # 连续涨停，非一字板
+        # if limitUpFlg == 1 and (stock[i + 2]['close'] - stock[i + 2]['open']) / stock[i + 2]['open'] > 0.01:
+        #     limitWithoutOneLine += 1
+        #     if (9.5 <= stock[i + 1]['p_change'] and stock[i + 1]['p_change'] < 12) and\
+        #         ((stock[i + 1]['close'] - stock[i + 1]['open']) / stock[i + 1]['open'] > 0.01):
+        #         limitAfterLimitWithoutOneLine += 1
+        # # 昨天涨停并且当天收阳
+        # if (stock[i + 1]['p_change'] > 0 and limitUpFlg == 1):
+        #     redCount += 1
+        #     # 前天涨停并且当天收阳
+        #     if (stock[i]['p_change'] > 0):
+        #         redAferRed += 1
+        #     # 前天涨停并且当天收阴
+        #     if (stock[i]['p_change'] < 0):
+        #         greenAferRed += 1
+        # # 昨天涨停并且当天收阴
+        # if (stock[i + 1]['p_change'] < 0 and limitUpFlg == 1):
+        #     greenCount += 1
+        #     # 前天涨停并且当天收阳
+        #     if (stock[i]['p_change'] > 0):
+        #         redAferGreen += 1
+        #     # 前天涨停并且当天收阴
+        #     if (stock[i]['p_change'] < 0):
+        #         greenAferGreen += 1
 
     return {'red':redCount, 'green':greenCount, 'total':totalCount,\
             'rAr':redAferRed, 'gAr':greenAferRed, 'rAg':redAferGreen,\
@@ -246,5 +251,5 @@ def getOneCount(stock):
 if __name__ == '__main__':  
     # getStockList('D:/Python/test/stocklist.csv')
     # downloadNotFqStock('D:/Python/test/stocklist.csv', 'D:/Python/test/stockNfq/')
-    downloadQfqStock('D:/Python/test/stocklist.csv', 'D:/Python/test/stockQfq/')
-    # getLimitUp('D:/Python/test/stocklist.csv', 'D:/Python/test/stockNfq/')
+    # downloadQfqStock('D:/Python/test/stocklist.csv', 'D:/Python/test/stockQfq/')
+    getLimitUp('D:/Python/test/stocklist.csv', 'D:/Python/test/stockNfq/')
