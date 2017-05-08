@@ -63,9 +63,9 @@ def getToday(path):  # wxGlade: MyFrame.<event_handler>
             # 判断涨幅范围
             increase = float('%.2f' % stock.p_change[0])
             for i in range(0, len(rangeArray), 1):
-                if (increase >= rangeArray[0] and stock.open == stock.close):
+                if (increase >= rangeArray[0] and stock.open[0] == stock.close[0]):
                     oneLimitUp += 1
-                elif (increase <= rangeArray[20] and stock.open == stock.close):
+                elif (increase <= rangeArray[20] and stock.open[0] == stock.close[0]):
                     oneLimitDown += 1
                 elif (i == 0 and increase >= rangeArray[i]):
                     cntArray[i] += 1
@@ -94,5 +94,5 @@ def getToday(path):  # wxGlade: MyFrame.<event_handler>
 # end of class MyFrame  
 if __name__ == "__main__":  
     path = './stock/'
-    getList(path)
+    # getList(path)
     getToday(path)
