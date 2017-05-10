@@ -28,7 +28,6 @@ def getList(path):  # wxGlade: MyFrame.<event_handler>
 def getToday(path):  # wxGlade: MyFrame.<event_handler> 
     # 获取当前日期 
     startTime = time.strftime('%Y-%m-%d',time.localtime(time.time()))
-    startTime = '2017-05-09'
     if not os.path.exists(path + 'stockList.csv'):
         return
 
