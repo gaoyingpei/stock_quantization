@@ -28,7 +28,7 @@ def getList(path):  # wxGlade: MyFrame.<event_handler>
 def getToday(path):  # wxGlade: MyFrame.<event_handler> 
     # 获取当前日期 
     startTime = time.strftime('%Y-%m-%d',time.localtime(time.time()))
-
+    startTime = '2017-05-09'
     if not os.path.exists(path + 'stockList.csv'):
         return
 
@@ -65,14 +65,19 @@ def getToday(path):  # wxGlade: MyFrame.<event_handler>
             for i in range(0, len(rangeArray), 1):
                 if (increase >= rangeArray[0] and stock.open[0] == stock.close[0]):
                     oneLimitUp += 1
+                    break
                 elif (increase <= rangeArray[20] and stock.open[0] == stock.close[0]):
                     oneLimitDown += 1
+                    break
                 elif (i == 0 and increase >= rangeArray[i]):
                     cntArray[i] += 1
+                    break
                 elif (i == len(rangeArray)-1 and increase < rangeArray[-1]):
                     cntArray[i+1] += 1
+                    break
                 elif (i > 0 and i < len(rangeArray)-1 and increase >= rangeArray[i] and increase < rangeArray[i-1]):
                     cntArray[i] += 1
+                    break
 
     cntArray.insert(0, oneLimitDown)
     cntArray.insert(0, oneLimitUp)
@@ -94,5 +99,5 @@ def getToday(path):  # wxGlade: MyFrame.<event_handler>
 # end of class MyFrame  
 if __name__ == "__main__":  
     path = './stock/'
-    # getList(path)
+    getList(path)
     getToday(path)

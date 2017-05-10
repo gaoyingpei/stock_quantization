@@ -106,14 +106,19 @@ class MyFrame(wx.Frame):
                 for i in range(0, len(rangeArray), 1):
                     if (increase >= rangeArray[0] and stock.open[0] == stock.close[0]):
                         oneLimitUp += 1
+                        break
                     elif (increase <= rangeArray[20] and stock.open[0] == stock.close[0]):
                         oneLimitDown += 1
+                        break
                     elif (i == 0 and increase >= rangeArray[i]):
                         cntArray[i] += 1
+                        break
                     elif (i == len(rangeArray)-1 and increase < rangeArray[-1]):
                         cntArray[i+1] += 1
+                        break
                     elif (i > 0 and i < len(rangeArray)-1 and increase >= rangeArray[i] and increase < rangeArray[i-1]):
                         cntArray[i] += 1
+                        break
 
         cntArray.insert(0, oneLimitDown)
         cntArray.insert(0, oneLimitUp)
