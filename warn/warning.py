@@ -7,6 +7,7 @@ __author__ = 'gaoyingpei'
 # 原作者为 gaoyingpei
 
 import wx
+import os
 
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -22,8 +23,18 @@ class MyFrame(wx.Frame):
         self.totalAmount = wx.TextCtrl(self, -1, "总仓位(万)",style=wx.TE_READONLY)
         self.todayPercent = wx.TextCtrl(self, -1, "今天可投入比例(%)",style=wx.TE_READONLY)
         self.todayAmount = wx.TextCtrl(self, -1, "今天投入资金(万)",style=wx.TE_READONLY)
-        self.total = wx.TextCtrl(self, -1, "",style=wx.TE_CENTRE)
-        self.percent = wx.TextCtrl(self, -1, "",style=wx.TE_CENTRE)
+        
+        filename = './cache/rest.txt'
+        totalA = ''
+        percentA = ''
+        if os.path.exists(filename):
+            file = open(r'./cache/rest.txt', 'r')
+            totalA = file.readline()
+            percentA = file.readline()
+            file.close()
+            
+        self.total = wx.TextCtrl(self, -1, totalA,style=wx.TE_CENTRE)
+        self.percent = wx.TextCtrl(self, -1, percentA,style=wx.TE_CENTRE)
         self.amount = wx.TextCtrl(self, -1, "",style=wx.TE_CENTRE)
         self.warning = wx.Button(self, -1, "判断预警")
 
@@ -64,7 +75,16 @@ class MyFrame(wx.Frame):
         # end wxGlade
 
     def warn(self, event):  # wxGlade: MyFrame.<event_handler>
-        self.warnFlg = float(self.total.GetValue()) * float(self.percent.GetValue()) - float(self.amount.GetValue())
+        filename = './cache/rest.txt'
+        if not os.path.exists(filename):
+            #os.remove(filename)
+            file = open('./cache/rest.txt', 'w')
+            file.write(self.total.GetValue())
+            file.write("\n")
+            file.write(self.percent.GetValue())
+            file.close()
+
+        self.warnFlg = float(self.total.GetValue()) * float(self.percent.GetValue()) / 100 - float(self.amount.GetValue())
 
         f = open(r'./cache/status.txt', 'w')
         f.truncate()
