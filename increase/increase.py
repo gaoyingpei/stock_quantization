@@ -68,6 +68,7 @@ class MyFrame(wx.Frame):
     def getToday(self, event):  # wxGlade: MyFrame.<event_handler> 
         # 获取当前日期 
         startTime = time.strftime('%Y-%m-%d',time.localtime(time.time()))
+        startTime = '2017-05-12'
 
         if not os.path.exists(self.path + 'stockList.csv'):
             wx.MessageBox("请先下载股票列表", "download error" ,wx.OK | wx.ICON_ERROR)
