@@ -28,9 +28,9 @@ class MyFrame(wx.Frame):
         totalA = ''
         percentA = ''
         if os.path.exists(filename):
-            file = open(r'./cache/rest.txt', 'r')
-            totalA = file.readline()
-            percentA = file.readline()
+            file = open(filename, 'r')
+            totalA = file.readline().strip('\n')
+            percentA = file.readline().strip('\n')
             file.close()
             
         self.total = wx.TextCtrl(self, -1, totalA,style=wx.TE_CENTRE)
@@ -76,13 +76,13 @@ class MyFrame(wx.Frame):
 
     def warn(self, event):  # wxGlade: MyFrame.<event_handler>
         filename = './cache/rest.txt'
-        if not os.path.exists(filename):
-            #os.remove(filename)
-            file = open('./cache/rest.txt', 'w')
-            file.write(self.total.GetValue())
-            file.write("\n")
-            file.write(self.percent.GetValue())
-            file.close()
+        if os.path.exists(filename):
+            os.remove(filename)
+        file = open('./cache/rest.txt', 'w')
+        file.write(self.total.GetValue())
+        file.write("\n")
+        file.write(self.percent.GetValue())
+        file.close()
 
         self.warnFlg = float(self.total.GetValue()) * float(self.percent.GetValue()) / 100 - float(self.amount.GetValue())
 
