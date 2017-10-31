@@ -13,33 +13,42 @@ import numpy as np
 import json
 import csv
 import datetime as dt
+import urllib.request
+import re
 
 
 # 下载股票列表
 def getStockList():
-    path = 'D:/Python/test/stocklist.csv'
-    fq = ts.get_stock_basics()
-    stockList = []
-    stockList = pds.DataFrame(fq, columns=['timeToMarket', 'name'])
-    stockList.to_csv(path, header=None)
+    allCodeList = []
+    html = urllib.request.urlopen('http://quote.eastmoney.com/stocklist.html').read()
+    html = html.decode('gbk')
+    s = r'<li><a target="_blank" href="http://quote.eastmoney.com/\S\S(.*?).html">'
+    pat = re.compile(s)
+    code = pat.findall(html)
+    for item in code:
+        if item[0]=='6' or item[0]=='3' or item[0]=='0':
+            allCodeList.append(item)
+    return allCodeList
 
 # 下载数据(前复权)
-def downloadQfqStock():
-    # 读取CSV文件获取股票列表
-    with open('D:/Python/test/stocklist.csv','r', encoding='utf-8') as f:
-        stockList = csv.reader(f)
-        for onestock in stockList:
+def downloadQfqStock(allCodelist):
+    for code in allCodelist:
+        print('正在获取%s股票数据...'%code)
+        if code[0]=='6':
+            url = 'http://quotes.money.163.com/service/chddata.html?code=0'+code+\
+            '&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER'
+            # '&end=20161231&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
+        else:
+            url = 'http://quotes.money.163.com/service/chddata.html?code=1'+code+\
+            '&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER'
+        urllib.request.urlretrieve(url,'D:/Python/test/stockQfq/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
 
-            # 股票未上市
-            if onestock[1] == '0':
-                continue
+        # test = requests.get("http://quotes.money.163.com/service/chddata.html?code=0601857&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER")
+        # test2 = test.text
+        # test3 = test2.split('\r\n')
 
-            # 获取股票历史数据
-            startTime = onestock[1][0:4] + '-' + onestock[1][4:6] + '-' + onestock[1][6:8]
-            stock = ts.get_h_data(onestock[0], start=startTime)
-            # 读取/存入本地JSON文件
-            filename = 'D:/Python/test/stockQfq/' + onestock[0] + '.json'
-            stock.to_json(filename, orient='records') #保存为JSON格式
+        # test4 = [{'date':'2017-10-31','code':601857,'name':'中国石油','vol':47719652,'amount':393957807.0},{'date':'2017-10-30','code':601857,'name':'中国石油','vol':101277166,'amount':835501367.0}]
+        # test5 = np.array(test4)
 
 # 获取股票数据
 def getStockData():
