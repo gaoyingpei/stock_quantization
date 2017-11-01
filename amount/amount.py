@@ -41,15 +41,14 @@ def downloadQfqStock(allCodelist):
         else:
             url = 'http://quotes.money.163.com/service/chddata.html?code=1'+code+\
             '&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
-        urllib.request.urlretrieve(url,'E:/Python/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
-        break
+        urllib.request.urlretrieve(url,'D:/Python/test/qfq/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
 
 # 获取股票数据
 def getStockData(allCodelist):
-    # 读取CSV文件获取股票列表
+    # 循环读取每支股票的CSV文件获取每日信息
     result = {}
     for code in allCodelist:
-        with open('E:/Python/'+code+'.csv','r', encoding='gbk') as f:
+        with open('D:/Python/test/qfq/'+code+'.csv','r', encoding='gbk') as f:
             stockData = csv.reader(f)
 
             for one in stockData:
@@ -60,69 +59,38 @@ def getStockData(allCodelist):
                 if thisDate not in result:
                     result[thisDate] = []
                 
-                result[thisDate].append({'date':one[0], 'code':one[1], 'name':one[2], 'vol':one[3], 'amount':one[4], 'close':one[5], 'percent':one[6]})
-
-    
-                
-        # stockList = csv.reader(f)
-        # stockData = []
-        # for onestock in stockList:
-        #     # 读取JSON文件获取股票信息
-        #     filename = 'D:/Python/test/stockQfq/' + onestock[0] + '.json'
-        #     jsonfile = open(filename, encoding='utf-8')
-
-        #     temp = {}
-        #     temp[onestock[0]] = (json.load(jsonfile)).reverse() # 按时间倒序
-        #     stockData.append(temp)
-
-        print(result)
-        return result
-
-# 统计所有股票成交额信息
-def sumStock(stockData):
-    today = dt.datetime.now()
-
-    # 读取CSV文件获取股票列表
-    with open('D:/Python/test/stocklist.csv','r', encoding='utf-8') as f:
-        stockList = csv.reader(f)
-        dateList = []
-
-        # 循环获取两年数据
-        for i in range(730):
-            # 获取要检查的日期
-            ymd = today - dt.timedelta(days=i)
-            oneDay = {}
-            oneDay[ymd] = []
-            
-            # 循环每支股票
-            for onestock in stockList:
-                # 循环单支股票所有日期
-                for val in stockData[onestock[0]]:
-                    if val['date'] == ymd:
-                        oneDay[ymd].append({'code':onestock[0], 'name':onestock[2], 'date':ymd, 'amount':val['amount']})
-                        break
-
-            # 排序
-            oneDay[ymd].sort(key = lambda x:x["amount"])
-
-            # 取前10名
-            dateList.append(oneDay[ymd][:10])
+                result[thisDate].append({'date':one[0], 'code':one[1][1:7], 'name':one[2], 'vol':one[3], 'amount':float(one[4]), 'close':one[5], 'percent':one[6]})
         
-        return dateList.reverse()
+    # 获取日期倒序
+    dates = sorted(result.keys(), reverse=True)
+
+    # 循环读取每日信息
+    lastResult = []
+    for d in dates:
+        # 单日排序
+        result[d].sort(key=lambda x:x['amount'], reverse=True)
+
+        # 取前10名
+        topTen = result[d][:10]
+
+        # 转化成数组，固定元素的顺序
+        for one in topTen:
+            lastResult.append([one['date'], one['code'], one['name'], one['vol'], one['amount'], one['close'], one['percent']])
+    
+    return lastResult
 
 # 存储为excel格式
 def excelDownload(dateList):
     # 将今日涨幅统计追加到每日统计列表中
-    result = DataFrame(np.array(dateList).reshape(len(dateList), 4),\
-                            index=['date'],\
-                            columns=['股票代码','股票名称','日期','成交额'])
+    result = DataFrame(np.array(dateList).reshape(len(dateList), 7),\
+                            index=None,\
+                            columns=['日期','股票代码','股票名称','成交量','成交额','收盘价','当日涨幅'])
     
     # 保存为excel
-    result.to_excel('./stock/每日统计.csv')
+    result.to_csv('D:/Python/test/成交额统计.csv')
 
-if __name__ == '__main__':  
-    # data = getStockList()
-    # downloadQfqStock(data)
-    stockData = getStockData()
-    # dateList = sumStock(stockData)
-    # excelDownload(dateList)
+if __name__ == '__main__':
+    allCodelist = getStockList()
+    # downloadQfqStock(allCodelist)
+    dateList = getStockData(allCodelist)
+    excelDownload(dateList)
