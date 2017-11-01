@@ -36,36 +36,47 @@ def downloadQfqStock(allCodelist):
         print('正在获取%s股票数据...'%code)
         if code[0]=='6':
             url = 'http://quotes.money.163.com/service/chddata.html?code=0'+code+\
-            '&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER'
+            '&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
             # '&end=20161231&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
         else:
             url = 'http://quotes.money.163.com/service/chddata.html?code=1'+code+\
-            '&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER'
-        urllib.request.urlretrieve(url,'D:/Python/test/stockQfq/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
-
-        # test = requests.get("http://quotes.money.163.com/service/chddata.html?code=0601857&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER")
-        # test2 = test.text
-        # test3 = test2.split('\r\n')
-
-        # test4 = [{'date':'2017-10-31','code':601857,'name':'中国石油','vol':47719652,'amount':393957807.0},{'date':'2017-10-30','code':601857,'name':'中国石油','vol':101277166,'amount':835501367.0}]
-        # test5 = np.array(test4)
+            '&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
+        urllib.request.urlretrieve(url,'E:/Python/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
+        break
 
 # 获取股票数据
-def getStockData():
+def getStockData(allCodelist):
     # 读取CSV文件获取股票列表
-    with open('D:/Python/test/stocklist.csv','r', encoding='utf-8') as f:
-        stockList = csv.reader(f)
-        stockData = []
-        for onestock in stockList:
-            # 读取JSON文件获取股票信息
-            filename = 'D:/Python/test/stockQfq/' + onestock[0] + '.json'
-            jsonfile = open(filename, encoding='utf-8')
+    result = {}
+    for code in allCodelist:
+        with open('E:/Python/'+code+'.csv','r', encoding='gbk') as f:
+            stockData = csv.reader(f)
 
-            temp = {}
-            temp[onestock[0]] = (json.load(jsonfile)).reverse() # 按时间倒序
-            stockData.append(temp)
+            for one in stockData:
+                if one[0] == '日期':
+                    continue
+                
+                thisDate = one[0]
+                if thisDate not in result:
+                    result[thisDate] = []
+                
+                result[thisDate].append({'date':one[0], 'code':one[1], 'name':one[2], 'vol':one[3], 'amount':one[4], 'close':one[5], 'percent':one[6]})
 
-        return stockData
+    
+                
+        # stockList = csv.reader(f)
+        # stockData = []
+        # for onestock in stockList:
+        #     # 读取JSON文件获取股票信息
+        #     filename = 'D:/Python/test/stockQfq/' + onestock[0] + '.json'
+        #     jsonfile = open(filename, encoding='utf-8')
+
+        #     temp = {}
+        #     temp[onestock[0]] = (json.load(jsonfile)).reverse() # 按时间倒序
+        #     stockData.append(temp)
+
+        print(result)
+        return result
 
 # 统计所有股票成交额信息
 def sumStock(stockData):
@@ -110,8 +121,8 @@ def excelDownload(dateList):
     result.to_excel('./stock/每日统计.csv')
 
 if __name__ == '__main__':  
-    getStockList()
-    # downloadQfqStock()
-    # stockData = getStockData()
+    # data = getStockList()
+    # downloadQfqStock(data)
+    stockData = getStockData()
     # dateList = sumStock(stockData)
     # excelDownload(dateList)
