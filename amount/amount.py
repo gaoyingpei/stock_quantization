@@ -36,11 +36,11 @@ def downloadQfqStock(allCodelist):
         print('正在获取%s股票数据...'%code)
         if code[0]=='6':
             url = 'http://quotes.money.163.com/service/chddata.html?code=0'+code+\
-            '&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
+            '&start=20131001&end=20151001&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
             # '&end=20161231&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
         else:
             url = 'http://quotes.money.163.com/service/chddata.html?code=1'+code+\
-            '&start=20151001&end=20171031&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
+            '&start=20131001&end=20151001&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
         urllib.request.urlretrieve(url,'D:/Python/test/qfq/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
 
 # 获取股票数据
@@ -87,10 +87,135 @@ def excelDownload(dateList):
                             columns=['日期','股票代码','股票名称','成交量','成交额','收盘价','当日涨幅'])
     
     # 保存为excel
-    result.to_csv('D:/Python/test/成交额统计.csv')
+    result.to_csv('D:/Python/test/成交额日统计.csv')
+
+# 获取股票数据
+def getStockDataMonth(allCodelist):
+    # 循环读取每支股票的CSV文件获取每日信息
+    result = {}
+    for code in allCodelist:
+        with open('D:/Python/test/qfq/'+code+'.csv','r', encoding='gbk') as f:
+            stockData = csv.reader(f)
+
+            for one in stockData:
+                if one[0] == '日期':
+                    continue
+                
+                spl = one[0].split('-')
+                thisMonth = spl[0] + '/' + spl[1]
+
+                if thisMonth not in result:
+                    result[thisMonth] = []
+                
+                isExist = 0
+                for v in result[thisMonth]:
+                    if v['code'] == code:
+                        isExist = 1
+                        temp = v
+                        temp['vol'] = float(temp['vol']) + float(one[3])
+                        temp['amount'] = float(temp['amount']) + float(one[4])
+                        result[thisMonth][code] = temp
+
+                if isExist == 0:
+                    result[thisMonth].append({'date':one[0], 'code':one[1][1:7], 'name':one[2], 'vol':one[3], 'amount':float(one[4])})
+        
+    # 获取日期倒序
+    dates = sorted(result.keys(), reverse=True)
+
+    # 循环读取每日信息
+    lastResult = []
+    for d in dates:
+        # 单日排序
+        result[d].sort(key=lambda x:x['amount'], reverse=True)
+
+        # 取前20名
+        topTwn = result[d][:20]
+
+        # 转化成数组，固定元素的顺序
+        for one in topTwn:
+            lastResult.append([one['date'], one['code'], one['name'], one['vol'], one['amount']])
+    
+    return lastResult
+
+# 存储为excel格式
+def excelDownloadMonth(dateList):
+    # 将今日涨幅统计追加到每日统计列表中
+    result = DataFrame(np.array(dateList).reshape(len(dateList), 5),\
+                            index=None,\
+                            columns=['月份','股票代码','股票名称','成交量','成交额'])
+    
+    # 保存为excel
+    result.to_csv('D:/Python/test/成交额月统计.csv')
+
+# 获取股票数据
+def getStockDataYear(allCodelist):
+    # 循环读取每支股票的CSV文件获取每日信息
+    result = {}
+    for code in allCodelist:
+        with open('D:/Python/test/qfq/'+code+'.csv','r', encoding='gbk') as f:
+            stockData = csv.reader(f)
+
+            for one in stockData:
+                if one[0] == '日期':
+                    continue
+                
+                thisYear = one[0].split('-')[0]
+
+                if thisYear not in result:
+                    result[thisYear] = []
+                
+                isExist = 0
+                for v in result[thisYear]:
+                    if v['code'] == code:
+                        isExist = 1
+                        temp = v
+                        temp['vol'] = float(temp['vol']) + float(one[3])
+                        temp['amount'] = float(temp['amount']) + float(one[4])
+                        result[thisYear][code] = temp
+
+                if isExist == 0:
+                    result[thisYear].append({'date':one[0], 'code':one[1][1:7], 'name':one[2], 'vol':float(one[3]), 'amount':float(one[4])})
+        
+    # 获取日期倒序
+    dates = sorted(result.keys(), reverse=True)
+
+    # 循环读取每日信息
+    lastResult = []
+    for d in dates:
+        # 单日排序
+        result[d].sort(key=lambda x:x['amount'], reverse=True)
+
+        # 取前20名
+        topTwn = result[d][:20]
+
+        # 转化成数组，固定元素的顺序
+        for one in topTwn:
+            lastResult.append([one['date'], one['code'], one['name'], one['vol'], one['amount']])
+    
+    return lastResult
+
+# 存储为excel格式
+def excelDownloadYear(dateList):
+    # 将今日涨幅统计追加到每日统计列表中
+    result = DataFrame(np.array(dateList).reshape(len(dateList), 5),\
+                            index=None,\
+                            columns=['年份','股票代码','股票名称','成交量','成交额'])
+    
+    # 保存为excel
+    result.to_csv('D:/Python/test/成交额年统计.csv')
 
 if __name__ == '__main__':
     allCodelist = getStockList()
     # downloadQfqStock(allCodelist)
-    dateList = getStockData(allCodelist)
-    excelDownload(dateList)
+
+    # # 日排行
+    # dateList = getStockData(allCodelist)
+    # excelDownload(dateList)
+
+    # # 月排行
+    # dateList = getStockDataMonth(allCodelist)
+    # excelDownloadMonth(dateList)
+
+    # # 年排行
+    # dateList = getStockDataYear(allCodelist)
+    # excelDownloadYear(dateList)
