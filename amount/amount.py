@@ -36,11 +36,11 @@ def downloadQfqStock(allCodelist):
         print('正在获取%s股票数据...'%code)
         if code[0]=='6':
             url = 'http://quotes.money.163.com/service/chddata.html?code=0'+code+\
-            '&start=20131001&end=20151001&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
+            '&start=20170101&end=20171231&fields=VOTURNOVER;VATURNOVER'
             # '&end=20161231&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
         else:
             url = 'http://quotes.money.163.com/service/chddata.html?code=1'+code+\
-            '&start=20131001&end=20151001&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
+            '&start=20170101&end=20171231&fields=VOTURNOVER;VATURNOVER'
         urllib.request.urlretrieve(url,'D:/Python/test/qfq/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
 
 # 获取股票数据
@@ -206,7 +206,7 @@ def excelDownloadYear(dateList):
 
 if __name__ == '__main__':
     allCodelist = getStockList()
-    # downloadQfqStock(allCodelist)
+    downloadQfqStock(allCodelist)
 
     # # 日排行
     # dateList = getStockData(allCodelist)
