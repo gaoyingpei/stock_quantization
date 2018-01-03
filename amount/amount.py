@@ -36,11 +36,11 @@ def downloadQfqStock(allCodelist):
         print('正在获取%s股票数据...'%code)
         if code[0]=='6':
             url = 'http://quotes.money.163.com/service/chddata.html?code=0'+code+\
-            '&start=20170101&end=20171231&fields=VOTURNOVER;VATURNOVER'
+            '&start=20100101&end=20171231&fields=VOTURNOVER;VATURNOVER'
             # '&end=20161231&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
         else:
             url = 'http://quotes.money.163.com/service/chddata.html?code=1'+code+\
-            '&start=20170101&end=20171231&fields=VOTURNOVER;VATURNOVER'
+            '&start=20100101&end=20171231&fields=VOTURNOVER;VATURNOVER'
         urllib.request.urlretrieve(url,'D:/Python/test/qfq/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
 
 # 获取股票数据
@@ -102,22 +102,21 @@ def getStockDataMonth(allCodelist):
                     continue
                 
                 spl = one[0].split('-')
-                thisMonth = spl[0] + '/' + spl[1]
+                thisMonth = spl[0] + '年' + spl[1] + '月'
 
                 if thisMonth not in result:
                     result[thisMonth] = []
                 
                 isExist = 0
-                for v in result[thisMonth]:
-                    if v['code'] == code:
+                for i in range(0, len(result[thisMonth]), 1):
+                    if result[thisMonth][i]['code'] == code:
                         isExist = 1
-                        temp = v
-                        temp['vol'] = float(temp['vol']) + float(one[3])
-                        temp['amount'] = float(temp['amount']) + float(one[4])
-                        result[thisMonth][code] = temp
+                        result[thisMonth][i]['vol'] = float(result[thisMonth][i]['vol']) + float(one[3])
+                        result[thisMonth][i]['amount'] = float(result[thisMonth][i]['amount']) + float(one[4])
+                        break
 
                 if isExist == 0:
-                    result[thisMonth].append({'date':one[0], 'code':one[1][1:7], 'name':one[2], 'vol':one[3], 'amount':float(one[4])})
+                    result[thisMonth].append({'date':thisMonth, 'code':one[1][1:7], 'name':one[2], 'vol':one[3], 'amount':float(one[4])})
         
     # 获取日期倒序
     dates = sorted(result.keys(), reverse=True)
@@ -165,16 +164,15 @@ def getStockDataYear(allCodelist):
                     result[thisYear] = []
                 
                 isExist = 0
-                for v in result[thisYear]:
-                    if v['code'] == code:
+                for i in range(0, len(result[thisYear]), 1):
+                    if result[thisYear][i]['code'] == code:
                         isExist = 1
-                        temp = v
-                        temp['vol'] = float(temp['vol']) + float(one[3])
-                        temp['amount'] = float(temp['amount']) + float(one[4])
-                        result[thisYear][code] = temp
+                        result[thisYear][i]['vol'] = float(result[thisYear][i]['vol']) + float(one[3])
+                        result[thisYear][i]['amount'] = float(result[thisYear][i]['amount']) + float(one[4])
+                        break
 
                 if isExist == 0:
-                    result[thisYear].append({'date':one[0], 'code':one[1][1:7], 'name':one[2], 'vol':float(one[3]), 'amount':float(one[4])})
+                    result[thisYear].append({'date':thisYear, 'code':one[1][1:7], 'name':one[2], 'vol':float(one[3]), 'amount':float(one[4])})
         
     # 获取日期倒序
     dates = sorted(result.keys(), reverse=True)
@@ -206,7 +204,7 @@ def excelDownloadYear(dateList):
 
 if __name__ == '__main__':
     allCodelist = getStockList()
-    downloadQfqStock(allCodelist)
+    # downloadQfqStock(allCodelist)
 
     # # 日排行
     # dateList = getStockData(allCodelist)
@@ -216,6 +214,6 @@ if __name__ == '__main__':
     # dateList = getStockDataMonth(allCodelist)
     # excelDownloadMonth(dateList)
 
-    # # 年排行
-    # dateList = getStockDataYear(allCodelist)
-    # excelDownloadYear(dateList)
+    # 年排行
+    dateList = getStockDataYear(allCodelist)
+    excelDownloadYear(dateList)
