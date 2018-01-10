@@ -36,11 +36,12 @@ def downloadQfqStock(allCodelist):
         print('正在获取%s股票数据...'%code)
         if code[0]=='6':
             url = 'http://quotes.money.163.com/service/chddata.html?code=0'+code+\
-            '&start=20100101&end=20171231&fields=VOTURNOVER;VATURNOVER'
+            '&start=20100101&end=20171231&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
             # '&end=20161231&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
+            # 收盘价 最高价 最低价 开盘价 前收盘 涨跌额 涨跌幅 换手率 成交量 成交金额 总市值 流通市值 成交笔数
         else:
             url = 'http://quotes.money.163.com/service/chddata.html?code=1'+code+\
-            '&start=20100101&end=20171231&fields=VOTURNOVER;VATURNOVER'
+            '&start=20100101&end=20171231&fields=VOTURNOVER;VATURNOVER;TCLOSE;PCHG'
         urllib.request.urlretrieve(url,'D:/Python/test/qfq/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
 
 # 获取股票数据
@@ -56,6 +57,9 @@ def getStockData(allCodelist):
                     continue
                 
                 thisDate = one[0]
+                if thisDate[0:4] != '2011' and thisDate[0:4] != '2010':
+                    continue
+
                 if thisDate not in result:
                     result[thisDate] = []
                 
@@ -71,7 +75,7 @@ def getStockData(allCodelist):
         result[d].sort(key=lambda x:x['amount'], reverse=True)
 
         # 取前10名
-        topTen = result[d][:10]
+        topTen = result[d][:20]
 
         # 转化成数组，固定元素的顺序
         for one in topTen:
@@ -206,14 +210,14 @@ if __name__ == '__main__':
     allCodelist = getStockList()
     # downloadQfqStock(allCodelist)
 
-    # # 日排行
-    # dateList = getStockData(allCodelist)
-    # excelDownload(dateList)
+    # 日排行
+    dateList = getStockData(allCodelist)
+    excelDownload(dateList)
 
     # # 月排行
     # dateList = getStockDataMonth(allCodelist)
     # excelDownloadMonth(dateList)
 
-    # 年排行
-    dateList = getStockDataYear(allCodelist)
-    excelDownloadYear(dateList)
+    # # 年排行
+    # dateList = getStockDataYear(allCodelist)
+    # excelDownloadYear(dateList)
