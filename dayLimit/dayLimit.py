@@ -42,18 +42,18 @@ def downloadQfqStock(allCodelist):
         else:
             url = 'http://quotes.money.163.com/service/chddata.html?code=1'+code+\
             '&start=20170101&end=20180818&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP'
-        urllib.request.urlretrieve(url,'D:/Python/test/qfq/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
+        urllib.request.urlretrieve(url,'D:/files/'+code+'.csv') # 可以加一个参数dowmback显示下载进度
 
 # 获取股票数据
 def getStockData(allCodelist):
     # 循环读取每支股票的CSV文件获取每日信息
     result = {}
     for code in allCodelist:
-        with open('D:/Python/test/qfq/'+code+'.csv','r', encoding='gbk') as f:
+        with open('D:/files/'+code+'.csv','r', encoding='gbk') as f:
             stockData = csv.reader(f)
 
             for one in stockData:
-                if one[0] == '日期':
+                if one[0] == '日期' or one[9] == 'None':
                     continue
                 
                 thisDate = one[0]
@@ -61,7 +61,7 @@ def getStockData(allCodelist):
                 if thisDate not in result:
                     result[thisDate] = []
                 
-                result[thisDate].append({'date':one[0], 'code':one[1][1:7], 'p':one[8]})
+                result[thisDate].append({'date':one[0], 'code':one[1][1:7], 'p':float(one[9])})
         
     # 获取日期倒序
     dates = sorted(result.keys(), reverse=True)
@@ -75,15 +75,15 @@ def getStockData(allCodelist):
         if result[d][24]['p'] < 9.9: continue
 
         cnt = 0
-        str = ''
-        for k in result[d]:
-            if k < 24 or result[d][k]['p'] >= 9.9:
+        str = []
+        for oneday in result[d]:
+            if cnt < 25 or oneday['p'] >= 9.9:
                 cnt = cnt + 1
-                str = str + result[d][k]['code'] + ','
+                str.append(oneday['code'])
                 continue
             break
 
-        lastResult.append([d, cnt, str[:-1]])
+        lastResult.append([d, cnt, "'" + ','.join(str)])
     
     return lastResult
 
@@ -92,10 +92,10 @@ def excelDownload(dateList):
     # 将今日涨幅统计追加到每日统计列表中
     result = DataFrame(np.array(dateList).reshape(len(dateList), 3),\
                             index=None,\
-                            columns=['日期','涨停家数','涨停股票列表'])
+                            columns=['date','raising limit count','raising limit list'])
     
     # 保存为excel
-    result.to_csv('D:/Python/test/涨停统计.csv')
+    result.to_csv('D:/files/涨停统计.csv')
 
 if __name__ == '__main__':
     allCodelist = getStockList()
