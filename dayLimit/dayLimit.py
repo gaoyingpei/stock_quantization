@@ -53,7 +53,7 @@ def getStockData(allCodelist):
             stockData = csv.reader(f)
 
             for one in stockData:
-                if one[0] == '日期' or one[9] == 'None':
+                if one[0] == '日期' or one[9] == 'None' or one[3] == one[6]:
                     continue
                 
                 thisDate = one[0]
