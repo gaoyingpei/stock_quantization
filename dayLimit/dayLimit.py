@@ -72,12 +72,12 @@ def getStockData(allCodelist):
         # 单日排序
         result[d].sort(key=lambda x:x['p'], reverse=True)
 
-        if result[d][24]['p'] < 9.9: continue
+        if result[d][25]['p'] >= 9.9: continue
 
         cnt = 0
         str = []
         for oneday in result[d]:
-            if cnt < 25 or oneday['p'] >= 9.9:
+            if oneday['p'] >= 9.9:
                 cnt = cnt + 1
                 str.append(oneday['code'])
                 continue
